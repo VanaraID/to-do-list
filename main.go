@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/VanaraID/to-do-list/model"
 )
@@ -25,18 +26,27 @@ func handlerIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerTodo(w http.ResponseWriter, r *http.Request) {
-	message := "todos!"
-	w.Write([]byte(message))
+	if id := r.URL.Query().Get("id"); id != "" {
+
+		idInt, err := strconv.Atoi(id)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		OutputJSON(w, model.SelectTodo(idInt))
+		return
+	}
+	http.Error(w, "parameter id is a must", http.StatusInternalServerError)
 }
 
 func OutputJSON(w http.ResponseWriter, o interface{}) {
 	res, err := json.Marshal(o)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
-	w.Write([]byte("\n"))
 }

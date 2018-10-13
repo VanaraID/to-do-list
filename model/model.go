@@ -3,7 +3,7 @@ package model
 var todos = []*Todo{}
 
 type Todo struct {
-	Id     int32
+	Id     int
 	Name   string
 	Status bool
 }
@@ -18,7 +18,7 @@ func GetTodos() []*Todo {
 	return todos
 }
 
-func SelectTodo(id int32) *Todo {
+func SelectTodo(id int) *Todo {
 	for _, each := range todos {
 		if each.Id == id {
 			return each
