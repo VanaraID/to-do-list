@@ -9,6 +9,35 @@ import (
 	"github.com/VanaraID/to-do-list/model"
 )
 
+type Error struct {
+	HTTPCode int    `json:"-"`
+	Code     int    `json:"code,omitempty"`
+	Massage  string `json:"massage"`
+}
+
+func JSONError(e Error) []byte {
+	data := struct {
+		Err Error `json:"error"`
+	}{e}
+	b, err := json.Marshal(data)
+	if err != nil {
+		return []byte(err.Error())
+	}
+
+	return b
+}
+
+func DisplayError(w http.ResponseWriter) {
+	e := Error{
+		HTTPCode: http.StatusForbidden,
+		Code:     403,
+		Massage:  "An Error Occured",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(JSONError(e))
+
+}
+
 func main() {
 	http.HandleFunc("/", handlerIndex)
 	http.HandleFunc("/todo", handlerTodo)
@@ -37,7 +66,7 @@ func handlerTodo(w http.ResponseWriter, r *http.Request) {
 		OutputJSON(w, model.SelectTodo(idInt))
 		return
 	}
-	http.Error(w, "parameter id is a must", http.StatusInternalServerError)
+	DisplayError(w)
 }
 
 func OutputJSON(w http.ResponseWriter, o interface{}) {
