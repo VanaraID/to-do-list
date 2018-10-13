@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/VanaraID/to-do-list/model"
 )
 
 func main() {
@@ -18,11 +21,22 @@ func main() {
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
-	message := "welcome to vanara"
-	w.Write([]byte(message))
+	OutputJSON(w, model.GetTodos())
 }
 
 func handlerTodo(w http.ResponseWriter, r *http.Request) {
 	message := "todos!"
 	w.Write([]byte(message))
+}
+
+func OutputJSON(w http.ResponseWriter, o interface{}) {
+	res, err := json.Marshal(o)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
+	w.Write([]byte("\n"))
 }
