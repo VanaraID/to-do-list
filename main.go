@@ -1,42 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/VanaraID/to-do-list/lib"
 	"github.com/VanaraID/to-do-list/model"
 )
-
-type Error struct {
-	HTTPCode int    `json:"-"`
-	Code     int    `json:"code,omitempty"`
-	Massage  string `json:"massage"`
-}
-
-func JSONError(e Error) []byte {
-	data := struct {
-		Err Error `json:"error"`
-	}{e}
-	b, err := json.Marshal(data)
-	if err != nil {
-		return []byte(err.Error())
-	}
-
-	return b
-}
-
-func DisplayError(w http.ResponseWriter) {
-	e := Error{
-		HTTPCode: http.StatusForbidden,
-		Code:     403,
-		Massage:  "An Error Occured",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(JSONError(e))
-
-}
 
 func main() {
 	http.HandleFunc("/", handlerIndex)
@@ -51,7 +22,7 @@ func main() {
 }
 
 func handlerIndex(w http.ResponseWriter, r *http.Request) {
-	OutputJSON(w, model.GetTodos())
+	lib.HTTPJSON(w, model.GetTodos())
 }
 
 func handlerTodo(w http.ResponseWriter, r *http.Request) {
@@ -63,19 +34,9 @@ func handlerTodo(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		OutputJSON(w, model.SelectTodo(idInt))
-		return
-	}
-	DisplayError(w)
-}
-
-func OutputJSON(w http.ResponseWriter, o interface{}) {
-	res, err := json.Marshal(o)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		lib.HTTPJSON(w, model.SelectTodo(idInt))
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
+	lib.HTTPError(w, http.StatusInternalServerError, "parameter id is a must.")
 }
